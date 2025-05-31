@@ -34,9 +34,9 @@ void drawBlackLine(PPMImage& img, int x, int y) {
         
         
         int index = (y * img.width + (x+j)) * 3;
-        img.pixels[index] = 0;       // R
-        img.pixels[index + 1] = 0;   // G
-        img.pixels[index + 2] = 0;   // B
+        img.pixels[index] = 0;       
+        img.pixels[index + 1] = 0;   
+        img.pixels[index + 2] = 0;   
     }
 }
 
