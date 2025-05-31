@@ -1,0 +1,127 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+struct PPMImage {
+    int width;
+    int height;
+    int maxColorValue;
+    vector<unsigned char> pixels; 
+};
+
+
+
+
+// Function to write a PPM image to file
+bool writePPM(const char* filename, const PPMImage& img) {
+    ofstream file(filename, ios::binary);
+    if (!file) return false;
+
+    file << "P6\n" << img.width << " " << img.height << "\n" << img.maxColorValue << "\n";
+    file.write(reinterpret_cast<const char*>(img.pixels.data()), img.pixels.size());
+    return true;
+}
+
+
+
+
+// Function to draw a black horizontal line (dot-like) at given (x, y)
+void drawBlackLine(PPMImage& img, int x, int y) {
+    for (int j = 0; j < 400; ++j) {
+        
+        
+        int index = (y * img.width + (x+j)) * 3;
+        img.pixels[index] = 0;       // R
+        img.pixels[index + 1] = 0;   // G
+        img.pixels[index + 2] = 0;   // B
+    }
+}
+
+
+
+// Function to create a white image with black lines
+PPMImage createWhiteImage(int width, int height) {
+    PPMImage img;
+    img.width = width;
+    img.height = height;
+    img.maxColorValue = 255;
+
+    img.pixels.resize(width * height * 3, 255); 
+
+    int centerX = width / 4;
+    int centerY = height / 4;
+
+    int n;
+    cout << "How many lines do you want to draw? ";
+    cin >> n;
+
+    for (int i = 0; i < n; ++i) {
+        drawBlackLine(img, centerX, centerY);
+        centerY += 15;
+    }
+
+    return img;
+}
+
+
+int blacklinesdetect(PPMImage& img){
+  int n=0;
+  for(int i = 0; i < img.height; ++i) {
+    int w=img.width/2;
+    int index=(i*img.width+w)*3;
+    if(img.pixels[index] == 0 && img.pixels[index + 1] == 0 && img.pixels[index + 2] == 0) {
+        n++;
+    }
+  }
+  return n;
+} 
+    
+
+
+bool readPPM(const string& filename, PPMImage& img) {
+    ifstream file(filename, ios::binary);
+    if (!file) return false;
+
+    string header;
+    file >> header;
+    if (header != "P6") return false;
+
+    file >> img.width >> img.height >> img.maxColorValue;
+    file.ignore(); 
+
+    size_t size = img.width * img.height * 3;
+    img.pixels.resize(size);
+    file.read(reinterpret_cast<char*>(img.pixels.data()), size);
+
+    return true;
+}
+
+
+int main() {
+    PPMImage img = createWhiteImage(800, 600);
+
+    if (!writePPM("outputblacklines.ppm", img)) {
+        cerr << "Error writing PPM file." << endl;
+        return 1;
+    } else {
+        cout << "PPM file written successfully." << endl;
+    }
+    
+    PPMImage imgread;
+    //reading how many lines are there 
+    if(!readPPM("outputblacklines.ppm", imgread)) {
+        cerr << "Error reading PPM file." << endl;
+        return 1;
+    } 
+    else {
+        cout << "PPM file read successfully." << endl;
+    }
+
+    int lines = blacklinesdetect(imgread) ;
+    cout << "Number of black lines detected: " << lines << endl;
+    
+    return 0;
+}
